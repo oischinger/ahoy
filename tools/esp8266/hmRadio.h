@@ -54,7 +54,12 @@ template <uint8_t CE_PIN, uint8_t CS_PIN, uint8_t IRQ_PIN, class BUFFER, uint64_
 class HmRadio {
     public:
         HmRadio() : mNrf24(CE_PIN, CS_PIN, SPI_SPEED) {
-            DPRINTLN(DBG_VERBOSE, F("hmRadio.h : HmRadio():mNrf24(CE_PIN: ") + String(CE_PIN) + F(", CS_PIN: ") + String(CS_PIN) + F(", SPI_SPEED: ") + String(SPI_SPEED) + ")");
+            DPRINT(DBG_VERBOSE, F("hmRadio.h : HmRadio():mNrf24(CE_PIN: "));
+            DPRINT(DBG_VERBOSE, String(CE_PIN));
+            DPRINT(DBG_VERBOSE,F(", CS_PIN: "));
+            DPRINT(DBG_VERBOSE, String(CS_PIN));
+            DPRINT(DBG_VERBOSE, F(", SPI_SPEED: "));
+            DPRINTLN(DBG_VERBOSE, String(SPI_SPEED) + ")");
             mTxChLst[0] = 40;
             //mTxChIdx = 1;
 
@@ -101,7 +106,8 @@ class HmRadio {
             // enable only receiving interrupts
             mNrf24.maskIRQ(true, true, false);
 
-            DPRINTLN(DBG_INFO, F("RF24 Amp Pwr: RF24_PA_") + String(rf24AmpPower[AmplifierPower]));
+            DPRINT(DBG_INFO, F("RF24 Amp Pwr: RF24_PA_"));
+            DPRINTLN(DBG_INFO, String(rf24AmpPower[AmplifierPower]));
             mNrf24.setPALevel(AmplifierPower & 0x03);
             mNrf24.startListening();
 
@@ -173,10 +179,10 @@ class HmRadio {
             CP_U32_LittleEndian(&mTxBuf[12], ts);
             mTxBuf[19] = 0x05;
 
-            uint16_t crc = crc16(&mTxBuf[10], 14);
+            uint16_t crc = Hoymiles::crc16(&mTxBuf[10], 14);
             mTxBuf[24] = (crc >> 8) & 0xff;
             mTxBuf[25] = (crc     ) & 0xff;
-            mTxBuf[26] = crc8(mTxBuf, 26);
+            mTxBuf[26] = Hoymiles::crc8(mTxBuf, 26);
 
             sendPacket(invId, mTxBuf, 27, true);
         }
@@ -189,7 +195,7 @@ class HmRadio {
             CP_U32_BigEndian(&mTxBuf[5], (DTU_ID >> 8));
             mTxBuf[9]  = pid;
             if(calcCrc) {
-                mTxBuf[10] = crc8(mTxBuf, 10);
+                mTxBuf[10] = Hoymiles::crc8(mTxBuf, 10);
                 sendPacket(invId, mTxBuf, 11, false);
             }
         }
@@ -203,7 +209,7 @@ class HmRadio {
                 buf[i-1] = (buf[i] << 1) | (buf[i+1] >> 7);
             }
 
-            uint8_t crc = crc8(buf, *len-1);
+            uint8_t crc = Hoymiles::crc8(buf, *len-1);
             bool valid  = (crc == buf[*len-1]);
 
             return valid;

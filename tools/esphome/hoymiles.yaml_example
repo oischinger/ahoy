@@ -1,0 +1,102 @@
+esphome:
+  name: hoymiles
+  libraries:                #built-in libraries
+    - "SPI"
+    - "nrf24/RF24@^1.4.2"
+
+esp32:
+  board: az-delivery-devkit-v4
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+  level: DEBUG
+
+# Enable Home Assistant API
+api:
+  password: ""
+
+ota:
+  password: ""
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password  
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Hoymiles Fallback Hotspot"
+    password: !secret wifi_ap_password
+
+captive_portal:
+
+web_server:
+  port: 80
+
+time:
+  - platform: sntp
+    id: hoymiles_time
+
+external_components:
+  - source:
+      type: local
+      path: components
+
+
+hoymiles:
+    inverters:
+      - id: hm400
+        serialnumber: "0x1234567890"
+    cs_pin: 5
+    ce_pin: 4
+    irq_pin: 17
+
+sensor:
+  - platform: uptime
+    name: HM400 - Uptime Sensor
+  - platform: hoymiles
+    inverter_id: hm400
+    update_interval: 30s
+
+    general:
+      temperature:
+        name: "HM400 - Temperature"
+
+      yield_day:
+        name: "HM400 - Yield day"
+
+      yield_total:
+        name: "HM400 - Yield total"
+
+    grid:
+      current:
+        name: "HM400 - AC Current"
+      voltage:
+        name: "HM400 - AC Voltage"
+      power:
+        name: "HM400 - AC Power"
+      frequency:
+        name: "HM400 - AC Frequency"
+
+    channel_1:
+      current:
+        name: "HM400 - DC Current Channel 1"
+      voltage:
+        name: "HM400 - DC Voltage Channel 1"
+      power:
+        name: "HM400 - DC Power Channel 1"
+
+
+#  - platform: hoymiles
+#    inverter_id: hm350
+#    update_interval: 10s
+
+#       channel_1:
+#         current:
+#           name: "DC Current"
+#         voltage:
+#           name: "DC Voltage"
+#         power:
+#           name: "DC Power"

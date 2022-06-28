@@ -5,6 +5,8 @@
 
 #include "crc.h"
 
+namespace Hoymiles {
+
 uint8_t crc8(uint8_t buf[], uint8_t len) {
     uint8_t crc = CRC8_INIT;
     for(uint8_t i = 0; i < len; i++) {
@@ -32,4 +34,5 @@ uint16_t crc16(uint8_t buf[], uint8_t len, uint16_t start) {
         yield();
     }
     return crc;
+}
 }

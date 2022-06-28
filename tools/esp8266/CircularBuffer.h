@@ -21,7 +21,7 @@
 #ifndef CircularBuffer_h
 #define CircularBuffer_h
 
-#ifdef ESP8266
+#if defined(ESP8266) || defined(USE_ESP32)
 #define DISABLE_IRQ noInterrupts()
 #define RESTORE_IRQ interrupts()
 #else
