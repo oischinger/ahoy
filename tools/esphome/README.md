@@ -116,9 +116,15 @@ sensor:
 
 ```
 
-## 3. Troubleshooting
+## 3. Integrations
 
-### 3.1 `src/esphome/components/hoymiles/hmRadio.h:9:18: fatal error: RF24.h: No such file or directory`
+### 3.1 HomeAssistant
+![HomeAssistant](images/esphome-homeassistant.png)
+
+
+## 4. Troubleshooting
+
+### 4.1 `src/esphome/components/hoymiles/hmRadio.h:9:18: fatal error: RF24.h: No such file or directory`
 
 External libaries not defined. Add following to the `yaml` configuration
 
@@ -129,7 +135,7 @@ esphome:
     - "nrf24/RF24@^1.4.2"
 ```
 
-### 3.2 `src/esphome/components/hoymiles/hoymiles_sensor.h:4:46: fatal error: esphome/components/sensor/sensor.h: No such file or directory`
+### 4.2 `src/esphome/components/hoymiles/hoymiles_sensor.h:4:46: fatal error: esphome/components/sensor/sensor.h: No such file or directory`
 
 No sensor defined. Define a sensor like described in 2.2 Sensor or add an example sensor to the `yaml` configuration
 
