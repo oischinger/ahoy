@@ -1,7 +1,7 @@
 # Hoymiles Inverter Sensor for ESPHome on ESP32
 
 
-###Warning: This whole project is in development and not yet ready for a stable ruinning in production. ###
+### Warning: This whole project is in development and not yet ready for a stable ruinning in production. ###
 
 ## 1. Usage
 

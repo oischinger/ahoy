@@ -70,7 +70,7 @@ namespace hoymiles {
     }
 
     void HoymilesSensor::dump_config() {
-        ESP_LOGCONFIG(TAG, "Empty Hoymiles sensor");
+        // ESP_LOGCONFIG(TAG, "Empty Hoymiles sensor");
     }
 
 }  // namespace hoymiles.sensor

@@ -21,6 +21,8 @@ CONF_HOYMILES_ID = "hoymiles_id"
 
 CONF_INVERTERS = "inverters"
 CONF_SERIAL_NUMBER = "serialnumber"
+CONF_SEND_INTERVAL = "send_interval"
+CONF_AMPLIFIER_POWER = "amplifier_power"
 
 HOYMILES_SCHEMA_INVERTER = cv.Schema({
     # cv.GenerateID(): cv.declare_id("hoymiles_inverter_id"),
@@ -37,6 +39,9 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_CS_PIN, default=5): pins.internal_gpio_output_pin_schema,
             cv.Optional(CONF_CE_PIN, default=4): pins.internal_gpio_output_pin_schema,
             cv.Optional(CONF_IRQ_PIN, default=17): pins.internal_gpio_output_pin_schema,
+
+            cv.Optional(CONF_SEND_INTERVAL, default=5): cv.int_range(5, 120),
+            cv.Optional(CONF_AMPLIFIER_POWER, default=1): cv.int_range(1, 4),
 
             cv.Required(CONF_INVERTERS, ): [ HOYMILES_SCHEMA_INVERTER ],
 
@@ -61,6 +66,16 @@ def to_code(config):
 
     irq = yield cg.gpio_pin_expression(config[CONF_IRQ_PIN])
     cg.add(var.set_irq_pin(irq))
+
+    send_interval = config[CONF_SEND_INTERVAL]
+
+    if (send_interval < 5):
+        send_interval = 5
+
+    cg.add(var.set_send_interval(send_interval))
+
+    amplifier_power = config[CONF_AMPLIFIER_POWER]
+    cg.add(var.set_amplifier_power(send_interval))
 
     count = 0;
     for inverters in config[CONF_INVERTERS]:

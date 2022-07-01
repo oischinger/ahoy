@@ -72,7 +72,7 @@ namespace hoymiles {
         mTimestamp = time_clock->now().timestamp;
 
         mSendTicker     = 0xffff;
-        mSendInterval   = 0;
+        mSendInterval   = this->send_interval_;
 
         // mUpdateTicker   = 0xffff;
         // mUpdateInterval = update_interval_min_ / 1000;

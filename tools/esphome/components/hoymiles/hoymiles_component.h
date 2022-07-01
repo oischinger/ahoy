@@ -47,6 +47,8 @@ class HoymilesComponent : public Component {
         void set_irq_pin(InternalGPIOPin *pin) { this->irq_pin_ = pin; }
 
         void set_time(esphome::time::RealTimeClock *clock) { time_clock = clock; }
+        void set_send_interval(uint16_t send_interval) { send_interval_ = send_interval; }
+        void set_amplifier_power(uint8_t amplifier_power) { amplifier_power_ = amplifier_power; }
 
         void add_inverter(int count, char *identification, char* serial_number) {
             this->inverters_[count].identification_ = identification;
@@ -71,6 +73,8 @@ class HoymilesComponent : public Component {
         } inverters_[MAX_NUM_INVERTERS];
 
         esphome::time::RealTimeClock *time_clock{nullptr};
+        uint16_t send_interval_;
+        uint8_t amplifier_power_;
 
 };
 }  // namespace uart

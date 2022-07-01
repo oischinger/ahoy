@@ -52,6 +52,8 @@ hoymiles:
     cs_pin: 5
     ce_pin: 4
     irq_pin: 17
+    send_interval: 20
+    amplifier_power: 1    
 
 sensor:
   - platform: uptime
