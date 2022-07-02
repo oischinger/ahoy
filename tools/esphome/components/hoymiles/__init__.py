@@ -75,7 +75,7 @@ def to_code(config):
     cg.add(var.set_send_interval(send_interval))
 
     amplifier_power = config[CONF_AMPLIFIER_POWER]
-    cg.add(var.set_amplifier_power(send_interval))
+    cg.add(var.set_amplifier_power(amplifier_power))
 
     count = 0;
     for inverters in config[CONF_INVERTERS]:
