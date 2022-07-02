@@ -19,6 +19,9 @@ namespace hoymiles {
     uint8_t mSendLastIvId;
     bool mMqttNewDataAvail;
     uint32_t mRxFailed;
+    uint32_t mRxSuccess;
+    uint8_t mMaxRetransPerPyld;
+    uint32_t mFrameCnt;
 
     uint32_t mUpdateTicker;
     uint16_t mUpdateInterval;
@@ -68,6 +71,8 @@ namespace hoymiles {
 
         attachInterrupt(digitalPinToInterrupt(mSys->Radio.pinIrq), handleIntr, FALLING);
 
+        mRxSuccess    = 0;
+
         mRxTicker = 0;
         mTimestamp = time_clock->now().timestamp;
 
@@ -87,6 +92,8 @@ namespace hoymiles {
 
         mMqttNewDataAvail = false;
         mRxFailed     = 0;
+        mRxSuccess    = 0;
+        mFrameCnt     = 0;
 
         // ESP_LOGI(TAG, "Update Interval %s", String(this->update_interval_min_));
     }
@@ -122,6 +129,8 @@ namespace hoymiles {
                         mSys->Radio.dumpBuf(NULL, p->packet, len);
                     // }                
                     // process buffer only on first occurrence
+                    mFrameCnt++;
+
                     if((0 != len)) {
                         // uint8_t *packetId = &p->packet[9];
                         //DPRINTLN("CMD " + String(*cmd, HEX));
@@ -146,7 +155,11 @@ namespace hoymiles {
                     }
                 }
                 mSys->BufCtrl.popBack();
-            }        
+            }
+
+            if (rxRdy) {
+                processPayload(true);
+            }
         }
 
         if(checkTicker(&mTicker, 1000)) {
@@ -255,31 +268,36 @@ namespace hoymiles {
 
 
     void processPayload(bool retransmit) {
+        ESP_LOGV(TAG, "app::processPayload");
         for(uint8_t id = 0; id < mSys->getNumInverters(); id++) {
             Inverter<> *iv = mSys->getInverterByPos(id);
             if(NULL != iv) {
                 if(!mPayload[iv->id].complete) {
                     if(!buildPayload(iv->id)) {
-                        if(retransmit) {
-                            if(mPayload[iv->id].maxPackId != 0) {
-                                for(uint8_t i = 0; i < (mPayload[iv->id].maxPackId-1); i ++) {
-                                    if(mPayload[iv->id].len[i] == 0) {
-                                        // if(mSerialDebug)
-                                            ESP_LOGE(TAG, "Error while retrieving data: Frame %i missing: Request Retransmit", (i+1));
-                                        mSys->Radio.sendCmdPacket(iv->radioId.u64, 0x15, (0x81+i), true);
+                        if(mPayload[iv->id].requested) {
+                            if(retransmit) {
+                                if(mPayload[iv->id].retransmits < mMaxRetransPerPyld) {
+                                    mPayload[iv->id].retransmits++;
+                                    if(mPayload[iv->id].maxPackId != 0) {
+                                        for(uint8_t i = 0; i < (mPayload[iv->id].maxPackId-1); i ++) {
+                                            if(mPayload[iv->id].len[i] == 0) {
+                                                ESP_LOGE(TAG, "while retrieving data: Frame %s missing: Request Retransmit", String(i+1));
+                                                mSys->Radio.sendCmdPacket(iv->radioId.u64, 0x15, (0x81+i), true);
+                                                break; // only retransmit one frame per loop
+                                            }
+                                            yield();
+                                        }
                                     }
+                                    else {
+                                        ESP_LOGE(TAG, "while retrieving data: last frame missing: Request Retransmit");
+                                        if(0x00 != mLastPacketId)
+                                            mSys->Radio.sendCmdPacket(iv->radioId.u64, 0x15, mLastPacketId, true);
+                                        else
+                                            mSys->Radio.sendTimePacket(iv->radioId.u64, mPayload[iv->id].ts);
+                                    }
+                                    mSys->Radio.switchRxCh(100);
                                 }
                             }
-                            else {
-                                // if(mSerialDebug)
-                                    ESP_LOGE(TAG, "Error while retrieving data: last frame missing: Request Retransmit");
-
-                                if(0x00 != mLastPacketId)
-                                    mSys->Radio.sendCmdPacket(iv->radioId.u64, 0x15, mLastPacketId, true);
-                                else
-                                    mSys->Radio.sendTimePacket(iv->radioId.u64, mPayload[iv->id].ts);                        }
-                                    
-                            mSys->Radio.switchRxCh(300);
                         }
                     }
                     else {
@@ -290,21 +308,23 @@ namespace hoymiles {
                         for(uint8_t i = 0; i < (mPayload[iv->id].maxPackId); i ++) {
                             memcpy(&payload[offs], mPayload[iv->id].data[i], (mPayload[iv->id].len[i]));
                             offs += (mPayload[iv->id].len[i]);
+                            yield();
                         }
                         offs-=2;
-                        // if(mSerialDebug) {
-                            ESP_LOGD(TAG, "Payload (%i):", offs);
-                            // ESP_LOGD(TAG, "Payload (%i): %s", offs, C_dumpBuf(payload, offs));
-                            mSys->Radio.dumpBuf(NULL, payload, offs);
-                        // }
+                        
+                        ESP_LOGI(TAG, "Payload (%s): ", String(offs));
+                        mSys->Radio.dumpBuf(NULL, payload, offs);
+
+                        mRxSuccess++;
 
                         for(uint8_t i = 0; i < iv->listLen; i++) {
                             iv->addValue(i, payload);
+                            yield();
                         }
                         iv->doCalculations();
-                        mMqttNewDataAvail = true;
                     }
                 }
+                yield();
             }
         }
     }
