@@ -38,6 +38,9 @@ namespace hoymiles {
                     else if (String(fields[iv->assign[i].fieldId]).compareTo(String("Freq")) == 0 && this->grid_.frequency_sensor_ != nullptr) {
                         this->grid_.frequency_sensor_->publish_state(iv->getValue(i));
                     }
+                    else if (String(fields[iv->assign[i].fieldId]).compareTo(String("Effiency")) == 0 && this->general_.efficiency_sensor_ != nullptr) {
+                        this->general_.efficiency_sensor_->publish_state(iv->getValue(i));
+                    }
 
 
                 } else if (iv->assign[i].ch > 0) {
@@ -58,6 +61,10 @@ namespace hoymiles {
                         else if (String(fields[iv->assign[i].fieldId]).compareTo(String("U_DC")) == 0 && this->dc_channels_[dc_channel].voltage_sensor_ != nullptr) {
                             this->dc_channels_[dc_channel].voltage_sensor_->publish_state(iv->getValue(i));
                         }
+                        else if (String(fields[iv->assign[i].fieldId]).compareTo(String("Irradiation")) == 0 && this->dc_channels_[dc_channel].irradiation_sensor_ != nullptr) {
+                            this->dc_channels_[dc_channel].irradiation_sensor_->publish_state(iv->getValue(i));
+                        }
+
                     }
                 }
             }

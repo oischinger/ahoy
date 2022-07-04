@@ -23,6 +23,7 @@ namespace hoymiles {
             void set_dc_voltage_sensor(int channel, sensor::Sensor *obj) { this->dc_channels_[channel].voltage_sensor_ = obj; }
             void set_dc_current_sensor(int channel, sensor::Sensor *obj) { this->dc_channels_[channel].current_sensor_ = obj; }
             void set_dc_power_sensor(int channel, sensor::Sensor *obj) { this->dc_channels_[channel].power_sensor_ = obj; }
+            void set_general_irradiation_sensor(int channel, sensor::Sensor *obj) { this->dc_channels_[channel].irradiation_sensor_ = obj; }
 
             void set_grid_voltage_sensor(sensor::Sensor *obj) { this->grid_.voltage_sensor_ = obj; }
             void set_grid_current_sensor(sensor::Sensor *obj) { this->grid_.current_sensor_ = obj; }
@@ -33,6 +34,8 @@ namespace hoymiles {
             void set_general_yield_total_sensor(sensor::Sensor *obj) { this->general_.yield_total_sensor_ = obj; }
             void set_general_temperatur_sensor(sensor::Sensor *obj) { this->general_.yield_temperature_sensor_ = obj; }
 
+            void set_general_efficiency_sensor(sensor::Sensor *obj) { this->general_.efficiency_sensor_ = obj; }
+
         protected:
             char *inviter_id_;
 
@@ -40,6 +43,7 @@ namespace hoymiles {
                 sensor::Sensor *voltage_sensor_{nullptr};
                 sensor::Sensor *current_sensor_{nullptr};
                 sensor::Sensor *power_sensor_{nullptr};
+                sensor::Sensor *irradiation_sensor_{nullptr};
             } dc_channels_[6];
 
             struct HoymilesGrid {
@@ -53,6 +57,8 @@ namespace hoymiles {
                 sensor::Sensor *yield_total_sensor_{nullptr};
                 sensor::Sensor *yield_day_sensor_{nullptr};
                 sensor::Sensor *yield_temperature_sensor_{nullptr};
+
+                sensor::Sensor *efficiency_sensor_{nullptr};
             } general_;        
 
     };

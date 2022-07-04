@@ -72,6 +72,9 @@ sensor:
       yield_total:
         name: "HM400 - Yield total"
 
+      efficiency:
+        name: "HM400 - Efficiency"
+
     grid:
       current:
         name: "HM400 - AC Current"
@@ -89,6 +92,9 @@ sensor:
         name: "HM400 - DC Voltage Channel 1"
       power:
         name: "HM400 - DC Power Channel 1"
+      irradiation:
+        name: "HM400 - Irradiation Channel 1"
+
 
 
 #  - platform: hoymiles
