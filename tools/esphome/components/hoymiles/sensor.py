@@ -48,6 +48,8 @@ CONF_CHANNEL_4 = "channel_4"
 CONF_CHANNEL_5 = "channel_5"
 CONF_CHANNEL_6 = "channel_6"
 
+CONF_VALUE_YIELD_DAY = "yield_day"
+CONF_VALUE_YIELD_TOTAL = "yield_total"
 CONF_IRRADIATION="irradiation"
 
 HOYMILES_DC_CHANNEL_SCHEMA = cv.Schema(
@@ -70,9 +72,21 @@ HOYMILES_DC_CHANNEL_SCHEMA = cv.Schema(
             device_class=DEVICE_CLASS_POWER,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
+        cv.Optional(CONF_VALUE_YIELD_DAY): sensor.sensor_schema(
+                unit_of_measurement=UNIT_WATT_HOURS,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_ENERGY,
+                state_class=STATE_CLASS_MEASUREMENT,
+        ),
+        cv.Optional(CONF_VALUE_YIELD_TOTAL): sensor.sensor_schema(
+                unit_of_measurement=UNIT_KILOWATT_HOURS,
+                accuracy_decimals=2,
+                device_class=DEVICE_CLASS_ENERGY,
+                state_class=STATE_CLASS_TOTAL_INCREASING,
+        ),
         cv.Optional(CONF_IRRADIATION): sensor.sensor_schema(
             unit_of_measurement=UNIT_PERCENT,
-            accuracy_decimals=1,
+            accuracy_decimals=2,
             state_class=STATE_CLASS_MEASUREMENT,
         ),        
     }
@@ -103,7 +117,7 @@ HOYMILES_GRID_SCHEMA = cv.Schema(
         cv.Optional(CONF_FREQUENCY): sensor.sensor_schema(
             unit_of_measurement=UNIT_HERTZ,
             icon=ICON_CURRENT_AC,
-            accuracy_decimals=1,
+            accuracy_decimals=2,
             state_class=STATE_CLASS_MEASUREMENT,
         ),            
     }
@@ -125,7 +139,7 @@ HOYMILES_GENERAL_SCHEMA = cv.Schema(
         ),
         cv.Optional(CONF_VALUE_YIELD_TOTAL): sensor.sensor_schema(
                 unit_of_measurement=UNIT_KILOWATT_HOURS,
-                accuracy_decimals=1,
+                accuracy_decimals=2,
                 device_class=DEVICE_CLASS_ENERGY,
                 state_class=STATE_CLASS_TOTAL_INCREASING,
         ),
@@ -133,6 +147,12 @@ HOYMILES_GENERAL_SCHEMA = cv.Schema(
             unit_of_measurement=UNIT_CELSIUS,
             accuracy_decimals=1,
             device_class=DEVICE_CLASS_TEMPERATURE,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),
+        cv.Optional(CONF_POWER): sensor.sensor_schema(
+            unit_of_measurement=UNIT_WATT,
+            accuracy_decimals=2,
+            device_class=DEVICE_CLASS_POWER,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
 
@@ -187,7 +207,13 @@ def to_code(config):
             cg.add(var.set_dc_power_sensor(i, sens))
         if CONF_IRRADIATION in conf:
             sens = yield sensor.new_sensor(conf[CONF_IRRADIATION])
-            cg.add(var.set_general_irradiation_sensor(i, sens))
+            cg.add(var.set_dc_irradiation_sensor(i, sens))
+        if CONF_VALUE_YIELD_DAY in conf:
+            sens = yield sensor.new_sensor(conf[CONF_VALUE_YIELD_DAY])
+            cg.add(var.set_dc_yield_day_sensor(i, sens))
+        if CONF_VALUE_YIELD_TOTAL in conf:
+            sens = yield sensor.new_sensor(conf[CONF_VALUE_YIELD_TOTAL])
+            cg.add(var.set_dc_yield_total_sensor(i, sens))
 
     if (CONF_GRID in config):
 
@@ -218,7 +244,9 @@ def to_code(config):
         if CONF_TEMPERATURE in general_conf:
             sens = yield sensor.new_sensor(general_conf[CONF_TEMPERATURE])
             cg.add(var.set_general_temperatur_sensor(sens))
-
+        if CONF_POWER in general_conf:
+            sens = yield sensor.new_sensor(general_conf[CONF_POWER])
+            cg.add(var.set_general_power_sensor(sens))
         
         if CONF_EFFICIENCY in general_conf:
             sens = yield sensor.new_sensor(general_conf[CONF_EFFICIENCY])

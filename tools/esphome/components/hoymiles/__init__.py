@@ -97,3 +97,4 @@ async def register_hoymiles_device(var, config):
     """
     parent = await cg.get_variable(config[CONF_HOYMILES_ID])
     cg.add(var.set_hoymiles_parent(parent))
+
