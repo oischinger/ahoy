@@ -119,7 +119,7 @@ HOYMILES_GENERAL_SCHEMA = cv.Schema(
     {
         cv.Optional(CONF_VALUE_YIELD_DAY): sensor.sensor_schema(
                 unit_of_measurement=UNIT_WATT_HOURS,
-                accuracy_decimals=0,
+                accuracy_decimals=2,
                 device_class=DEVICE_CLASS_ENERGY,
                 state_class=STATE_CLASS_MEASUREMENT,
         ),

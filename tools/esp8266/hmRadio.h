@@ -200,6 +200,167 @@ class HmRadio {
             }
         }
 
+        void sendTurnOnOffPacket(uint64_t invId, bool onoff, bool calcCrc = true) {
+            memset(mTxBuf, 0, MAX_RF_PAYLOAD_SIZE);
+            mTxBuf[0] = 0x51; // message id
+            CP_U32_BigEndian(&mTxBuf[1], (invId  >> 8));
+            CP_U32_BigEndian(&mTxBuf[5], (DTU_ID >> 8));
+            mTxBuf[9]  = 0x81;
+            mTxBuf[10] = onoff ? 0x00 : 0x01;
+            mTxBuf[11] = 0x00; 
+            
+            if(calcCrc) {
+                uint16_t crc = Hoymiles::crc16(&mTxBuf[10], 2);
+                mTxBuf[12] = (crc >> 8) & 0xff;
+                mTxBuf[13] = (crc     ) & 0xff;
+
+                mTxBuf[14] = Hoymiles::crc8(mTxBuf, 14);
+                sendPacket(invId, mTxBuf, 15, false);
+                DPRINT(DBG_INFO, "Transmit (TurnOnOff) " + String(15) + " | ");
+                dumpBuf(NULL, mTxBuf, 15);
+            }
+        }
+
+        void sendRestartPacket(uint64_t invId, bool calcCrc = true) {
+            memset(mTxBuf, 0, MAX_RF_PAYLOAD_SIZE);
+            mTxBuf[0] = 0x51; // message id
+            CP_U32_BigEndian(&mTxBuf[1], (invId  >> 8));
+            CP_U32_BigEndian(&mTxBuf[5], (DTU_ID >> 8));
+            mTxBuf[9]  = 0x81;
+            mTxBuf[10] = 0x02;
+            mTxBuf[11] = 0x00; 
+            
+            if(calcCrc) {
+                uint16_t crc = Hoymiles::crc16(&mTxBuf[10], 2);
+                mTxBuf[12] = (crc >> 8) & 0xff;
+                mTxBuf[13] = (crc     ) & 0xff;
+
+                mTxBuf[14] = Hoymiles::crc8(mTxBuf, 14);
+                sendPacket(invId, mTxBuf, 15, false);
+                DPRINT(DBG_INFO, "Transmit (Restart) " + String(15) + " | ");
+                dumpBuf(NULL, mTxBuf, 15);
+            }
+        }
+
+        void sendPowerLimitPacket(uint64_t invId, uint8_t limit, bool calcCrc = true) {
+            //DPRINTLN(DBG_VERBOSE, F("hmRadio.h:sendCmdPacket"));
+            memset(mTxBuf, 0, MAX_RF_PAYLOAD_SIZE);
+            mTxBuf[0] = 0x51; // message id
+            CP_U32_BigEndian(&mTxBuf[1], (invId  >> 8));
+            CP_U32_BigEndian(&mTxBuf[5], (DTU_ID >> 8));
+            mTxBuf[9]  = 0x81;
+            mTxBuf[10] = 0x0B; 
+            mTxBuf[11] = 0x00;
+            
+            mTxBuf[12] = 0x01; // 30,0W 2 bits
+            mTxBuf[13] = 0xF4;
+
+            mTxBuf[14] = 0x01; 
+            mTxBuf[15] = 0x00; 
+
+            // 51 72 61 55 82 78 56 34 12 81 0B 00 01 2C 01 00 C5 C0 3E 
+            //    51 72 61 55 82 78 56 34 12 81 0B 00 01 2C 01 00 C5 C0 3E 
+            // mTxBuf[1] = 0x72; 
+            // mTxBuf[2] = 0x61; 
+            // mTxBuf[3] = 0x55; 
+            // mTxBuf[4] = 0x82; 
+            // mTxBuf[5] = 0x78; 
+            // mTxBuf[6] = 0x56; 
+            // mTxBuf[7] = 0x34; 
+            // mTxBuf[8] = 0x12; 
+            // mTxBuf[9] = 0x81; 
+            // mTxBuf[10] = 0x0B; 
+            // mTxBuf[11] = 0x00; 
+            // mTxBuf[12] = 0x01; 
+            // mTxBuf[13] = 0x2C; 
+            // mTxBuf[14] = 0x01; 
+            // mTxBuf[15] = 0x00; 
+
+
+// [18:55:14][I][hoymiles.esp32:229]: Sending Limitation: 10
+// [18:55:14]I: Transmit (Limit) 19 | 51 73 10 90 25 78 56 34 12 81 0B 00 01 F4 01 00 FE 40 4F 
+// [18:55:15][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [18:55:15]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [18:55:15][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [18:55:15]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [18:55:15][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [18:55:15]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [18:55:16][I][hoymiles.esp32:324]: Payload (4): 
+// [18:55:16]00 00 0B 00 
+// [18:55:35][D][switch:013]: 'HM400 - Switch On/Off' Turning ON.
+// [18:55:35][I][hoymiles.esp32:229]: Sending Limitation: 10
+// [18:55:35]I: Transmit (Limit) 19 | 51 73 10 90 25 78 56 34 12 81 0B 00 01 F4 01 00 FE 40 4F 
+// [18:55:36][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [18:55:36]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [18:55:36][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [18:55:36]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [18:55:36][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [18:55:36]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48    
+
+
+// [18:59:20][I][hoymiles.esp32:229]: Sending Limitation: 10
+// [18:59:20]I: Transmit (Limit) 19 | 51 73 10 90 25 78 56 34 12 81 0B 00 01 F4 01 00 FE 40 4F 
+// [18:59:21][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [18:59:21]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [18:59:21][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [18:59:21]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [18:59:21][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [18:59:21]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+
+// [19:10:03][I][hoymiles.esp32:229]: Sending Limitation: 10
+// [19:10:03]I: Transmit (Limit) 19 | 51 73 10 90 25 78 56 34 12 81 0B 00 00 00 00 20 B8 00 9D 
+// [19:10:04][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [19:10:04]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [19:10:04][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [19:10:04]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [19:10:04][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [19:10:04]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [19:10:07][I][hoymiles.esp32:324]: Payload (4): 
+// [19:10:07]00 00 0B 00 
+
+
+// [19:16:30][I][hoymiles.esp32:229]: Sending Limitation: 10
+// [19:16:30]I: Transmit (Limit) 19 | 51 73 10 90 25 78 56 34 12 81 0B 00 00 00 01 F4 77 01 86 
+// [19:16:31][D][hoymiles.esp32:127]: Received 17 bytes channel 3: 
+// [19:16:31]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [19:16:31][I][hoymiles.esp32:324]: Payload (4): 
+// [19:16:31]00 00 0B 00 
+// [19:16:31][D][hoymiles.esp32:127]: Received 17 bytes channel 3: 
+// [19:16:31]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [19:16:31][D][hoymiles.esp32:127]: Received 17 bytes channel 3: 
+// [19:16:31]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [19:16:31][D][hoymiles.esp32:127]: Received 17 bytes channel 3: 
+// [19:16:31]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [19:16:31][D][hoymiles.esp32:127]: Received 17 bytes channel 3: 
+// [19:16:31]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [19:16:31][D][hoymiles.esp32:127]: Received 17 bytes channel 3: 
+// [19:16:31]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+
+
+// [19:30:08][I][hoymiles.esp32:229]: Sending Limitation: 10
+// [19:30:08]I: Transmit (Limit) 19 | 51 73 10 90 25 78 56 34 12 81 0B 00 01 00 01 F4 8B 00 7A 
+// [19:30:09][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [19:30:09]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [19:30:09][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [19:30:09]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [19:30:09][D][hoymiles.esp32:127]: Received 17 bytes channel 75: 
+// [19:30:09]D1 73 10 90 25 73 10 90 25 81 00 00 0B 00 14 07 48 
+// [19:30:11][I][hoymiles.esp32:324]: Payload (4): 
+// [19:30:11]00 00 0B 00 
+ 
+
+            if(calcCrc) {
+                uint16_t crc = Hoymiles::crc16(&mTxBuf[10], 6);
+                mTxBuf[16] = (crc >> 8) & 0xff;
+                mTxBuf[17] = (crc     ) & 0xff;
+
+                mTxBuf[18] = Hoymiles::crc8(mTxBuf, 18);
+                sendPacket(invId, mTxBuf, 19, false);
+                DPRINT(DBG_INFO, "Transmit (Limit) " + String(19) + " | ");
+                dumpBuf(NULL, mTxBuf, 19);
+            }
+        }
+
         bool checkPaketCrc(uint8_t buf[], uint8_t *len, uint8_t rxCh) {
             //DPRINTLN(DBG_VERBOSE, F("hmRadio.h:checkPaketCrc"));
             *len = (buf[0] >> 2);
@@ -257,7 +418,7 @@ class HmRadio {
         bool mSerialDebug;
 
     private:
-        void sendPacket(uint64_t invId, uint8_t buf[], uint8_t len, bool clear=false) {
+        void sendPacket(uint64_t invId, uint8_t buf[], uint8_t len, bool clear=false, uint8_t channel = NULL) {
             //DPRINTLN(DBG_VERBOSE, F("hmRadio.h:sendPacket"));
             //DPRINTLN(DBG_VERBOSE, "sent packet: #" + String(mSendCnt));
             //dumpBuf("SEN ", buf, len);
@@ -272,7 +433,9 @@ class HmRadio {
             if(clear)
                 mRxLoopCnt = RX_LOOP_CNT;
 
-            mTxCh = getDefaultChannel();
+            if (!channel) 
+                mTxCh = getDefaultChannel();
+            
             mNrf24.setChannel(mTxCh);
             mNrf24.openWritingPipe(invId); // TODO: deprecated
             mNrf24.setCRCLength(RF24_CRC_16);

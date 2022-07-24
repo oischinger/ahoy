@@ -3,7 +3,7 @@
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/core/hal.h"
-#include "hoymiles.h"
+#include "../hoymiles.h"
 
 namespace esphome {
 namespace hoymiles {

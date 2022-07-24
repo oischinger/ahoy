@@ -225,6 +225,26 @@ namespace hoymiles {
         }        
     }
 
+    void HoymilesComponent::sendTurnOnOffPacket(uint64_t invId, bool state) {
+        ESP_LOGI(TAG, "Sending OnOff: %d", state);
+
+        mSys->Radio.sendTurnOnOffPacket(invId, state, true);
+    }
+
+    void HoymilesComponent::sendRestartPacket(uint64_t invId) {
+        ESP_LOGI(TAG, "Sending Restart");
+
+        mSys->Radio.sendRestartPacket(invId, true);
+    }
+
+
+    void HoymilesComponent::sendLimitPacket(uint64_t invId, uint32_t limit) {
+        ESP_LOGI(TAG, "Sending Limitation: %i", limit);
+
+        mSys->Radio.sendPowerLimitPacket(invId, limit, true);
+    }
+
+
 
     void HoymilesComponent::dump_config() {
     }
