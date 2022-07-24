@@ -1,0 +1,45 @@
+name: ESP8266
+
+on:
+  push:
+    branches: main
+    paths-ignore:
+    - '**.md' # Do no build on *.md changes
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: main
+    - name: Cache pip
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Cache PlatformIO
+      uses: actions/cache@v3
+      with:
+        path: ~/.platformio
+        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+    - name: Set up Python
+      uses: actions/setup-python@v3
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+    - name: Update html
+      working-directory: tools/esp8266/html
+      run: python convert.py
+    - name: Run PlatformIO
+      run: pio run -d tools/esp8266
+    - name: rename
+      working-directory: tools/esp8266/helpers
+      run: python getVersion.py
+    - uses: actions/upload-artifact@v3
+      with:
+        name: esp8266
+        path: tools/esp8266/.pio/build/d1_mini/out

@@ -15,11 +15,11 @@
 app::app() : Main() {
     DPRINTLN(DBG_VERBOSE, F("app::app():Main"));
     mSendTicker     = 0xffff;
-    mSendInterval   = 0;
+    mSendInterval   = SEND_INTERVAL;
     mMqttTicker     = 0xffff;
-    mMqttInterval   = 0;
+    mMqttInterval   = MQTT_INTERVAL;
     mSerialTicker   = 0xffff;
-    mSerialInterval = 0;
+    mSerialInterval = SERIAL_INTERVAL;
     mMqttActive     = false;
 
     mTicker = 0;
@@ -65,8 +65,8 @@ void app::setup(uint32_t timeout) {
 
     if(mSettingsValid) {
         mEep->read(ADDR_INV_INTERVAL, &mSendInterval);
-        if(mSendInterval < 5)
-            mSendInterval = 5;
+        if(mSendInterval < MIN_SEND_INTERVAL)
+            mSendInterval = MIN_SEND_INTERVAL;
         mSendTicker = mSendInterval;
 
         // inverter
@@ -84,8 +84,7 @@ void app::setup(uint32_t timeout) {
                     DPRINTLN(DBG_INFO, F("add inverter: ") + String(name) + ", SN: " + String(invSerial, HEX));
 
                     for(uint8_t j = 0; j < 4; j++) {
-                        mEep->read(ADDR_INV_CH_NAME + (i * 4 * MAX_NAME_LENGTH) + j * MAX_NAME_LENGTH, name, MAX_NAME_LENGTH);
-                        snprintf(iv->chName[j], MAX_NAME_LENGTH, "%s", name);
+                        mEep->read(ADDR_INV_CH_NAME + (i * 4 * MAX_NAME_LENGTH) + j * MAX_NAME_LENGTH, iv->chName[j], MAX_NAME_LENGTH);
                     }
                 }
 
@@ -115,17 +114,17 @@ void app::setup(uint32_t timeout) {
         // serial console
         uint8_t tmp;
         mEep->read(ADDR_SER_INTERVAL, &mSerialInterval);
+        if(mSerialInterval < MIN_SERIAL_INTERVAL)
+            mSerialInterval = MIN_SERIAL_INTERVAL;
         mEep->read(ADDR_SER_ENABLE, &tmp);
         mSerialValues = (tmp == 0x01);
         mEep->read(ADDR_SER_DEBUG, &tmp);
         mSerialDebug = (tmp == 0x01);
-        if(mSerialInterval < 1)
-            mSerialInterval = 1;
         mSys->Radio.mSerialDebug = mSerialDebug;
 
 
         // mqtt
-        uint8_t mqttAddr[MQTT_ADDR_LEN];
+        char mqttAddr[MQTT_ADDR_LEN];
         uint16_t mqttPort;
         char mqttUser[MQTT_USER_LEN];
         char mqttPwd[MQTT_PWD_LEN];
@@ -137,13 +136,10 @@ void app::setup(uint32_t timeout) {
         //mEep->read(ADDR_MQTT_INTERVAL, &mMqttInterval);
         mEep->read(ADDR_MQTT_PORT,     &mqttPort);
 
-        char addr[16] = {0};
-        sprintf(addr, "%d.%d.%d.%d", mqttAddr[0], mqttAddr[1], mqttAddr[2], mqttAddr[3]);
-
         if(mqttAddr[0] > 0) {
             mMqttActive = true;
-            if(mMqttInterval < 1)
-                mMqttInterval = 10;
+            if(mMqttInterval < MIN_MQTT_INTERVAL)
+                mMqttInterval = MIN_MQTT_INTERVAL;
         }
         else
             mMqttInterval = 0xffff;
@@ -151,8 +147,7 @@ void app::setup(uint32_t timeout) {
         if(0 == mqttPort)
             mqttPort = 1883;
 
-
-        mMqtt.setup(addr, mqttTopic, mqttUser, mqttPwd, mqttPort);
+        mMqtt.setup(mqttAddr, mqttTopic, mqttUser, mqttPwd, mqttPort);
         mMqttTicker = 0;
 
         mSerialTicker = 0;
@@ -283,7 +278,8 @@ void app::loop(void) {
                     }
                 }
             }
-            snprintf(val, 10, "%d", millis()/1000);
+            snprintf(val, 10, "%ld", millis()/1000);
+            sendMqttDiscoveryConfig();
             mMqtt.sendMsg("uptime", val);
         }
 
@@ -375,7 +371,7 @@ void app::handleIntr(void) {
 //-----------------------------------------------------------------------------
 bool app::buildPayload(uint8_t id) {
     DPRINTLN(DBG_VERBOSE, F("app::buildPayload"));
-    uint16_t crc = 0xffff, crcRcv;
+    uint16_t crc = 0xffff, crcRcv = 0x0000;
     if(mPayload[id].maxPackId > MAX_PAYLOAD_ENTRIES)
         mPayload[id].maxPackId = MAX_PAYLOAD_ENTRIES;
 
@@ -480,8 +476,6 @@ void app::showSetup(void) {
     DPRINTLN(DBG_VERBOSE, F("app::showSetup"));
     // overrides same method in main.cpp
 
-    uint16_t interval;
-
     String html = FPSTR(setup_html);
     html.replace(F("{SSID}"), mStationSsid);
     // PWD will be left at the default value (for protection)
@@ -497,7 +491,6 @@ void app::showSetup(void) {
     String inv;
     uint64_t invSerial;
     char name[MAX_NAME_LENGTH + 1] = {0};
-    uint8_t invType;
     uint16_t modPwr[4];
     for(uint8_t i = 0; i < MAX_NUM_INVERTERS; i ++) {
         mEep->read(ADDR_INV_ADDR + (i * 8),               &invSerial);
@@ -576,14 +569,12 @@ void app::showSetup(void) {
         mEep->read(ADDR_SER_DEBUG, &tmp);
         html.replace(F("{SER_DBG_CB}"), (tmp == 0x01) ? "checked" : "");
 
-        uint8_t mqttAddr[MQTT_ADDR_LEN] = {0};
+        char mqttAddr[MQTT_ADDR_LEN] = {0};
         uint16_t mqttPort;
         mEep->read(ADDR_MQTT_ADDR,     mqttAddr, MQTT_ADDR_LEN);
         mEep->read(ADDR_MQTT_PORT,     &mqttPort);
 
-        char addr[16] = {0};
-        sprintf(addr, "%d.%d.%d.%d", mqttAddr[0], mqttAddr[1], mqttAddr[2], mqttAddr[3]);
-        html.replace(F("{MQTT_ADDR}"),  String(addr));
+        html.replace(F("{MQTT_ADDR}"),  String(mqttAddr));
         html.replace(F("{MQTT_PORT}"),  String(mMqtt.getPort()));
         html.replace(F("{MQTT_USER}"),  String(mMqtt.getUser()));
         html.replace(F("{MQTT_PWD}"),   String(mMqtt.getPwd()));
@@ -791,7 +782,6 @@ void app::saveValues(bool webSend = true) {
     Main::saveValues(false); // general configuration
 
     if(mWeb->args() > 0) {
-        char *p;
         char buf[20] = {0};
         uint8_t i = 0;
         uint16_t interval;
@@ -802,7 +792,7 @@ void app::saveValues(bool webSend = true) {
             // address
             mWeb->arg("inv" + String(i) + "Addr").toCharArray(buf, 20);
             if(strlen(buf) == 0)
-                snprintf(buf, 20, "\0");
+                memset(buf, 0, 20);
             addr.u64 = Serial2u64(buf);
             mEep->write(ADDR_INV_ADDR + (i * 8), addr.u64);
 
@@ -838,18 +828,12 @@ void app::saveValues(bool webSend = true) {
         mEep->write(ADDR_RF24_AMP_PWR, mSys->Radio.AmplifierPower);
 
         // mqtt
-        uint8_t mqttAddr[MQTT_ADDR_LEN] = {0};
+        char mqttAddr[MQTT_ADDR_LEN] = {0};
         uint16_t mqttPort;
         char mqttUser[MQTT_USER_LEN];
         char mqttPwd[MQTT_PWD_LEN];
         char mqttTopic[MQTT_TOPIC_LEN];
-        mWeb->arg("mqttAddr").toCharArray(buf, 20);
-        i = 0;
-        p = strtok(buf, ".");
-        while(NULL != p) {
-            mqttAddr[i++] = atoi(p);
-            p = strtok(NULL, ".");
-        }
+        mWeb->arg("mqttAddr").toCharArray(mqttAddr, MQTT_ADDR_LEN);
         mWeb->arg("mqttUser").toCharArray(mqttUser, MQTT_USER_LEN);
         mWeb->arg("mqttPwd").toCharArray(mqttPwd, MQTT_PWD_LEN);
         mWeb->arg("mqttTopic").toCharArray(mqttTopic, MQTT_TOPIC_LEN);
@@ -903,4 +887,75 @@ void app::updateCrc(void) {
     crc = buildEEpCrc(ADDR_START_SETTINGS, ((ADDR_NEXT) - (ADDR_START_SETTINGS)));
     DPRINTLN(DBG_DEBUG, F("new CRC: ") + String(crc, HEX));
     mEep->write(ADDR_SETTINGS_CRC, crc);
+}
+
+void app::sendMqttDiscoveryConfig(void) {
+    DPRINTLN(DBG_VERBOSE, F("app::sendMqttDiscoveryConfig"));
+
+    char stateTopic[64], discoveryTopic[64], buffer[512], name[32], uniq_id[32];
+    for(uint8_t id = 0; id < mSys->getNumInverters(); id++) {
+        Inverter<> *iv = mSys->getInverterByPos(id);
+        if(NULL != iv) {
+            if(iv->isAvailable(mTimestamp) && mMqttConfigSendState[id] != true) {
+                DynamicJsonDocument deviceDoc(128);
+                deviceDoc["name"] = iv->name;
+                deviceDoc["ids"] = String(iv->serial.u64, HEX);
+                deviceDoc["cu"] = F("http://") + String(WiFi.localIP().toString());
+                JsonObject deviceObj = deviceDoc.as<JsonObject>();
+                DynamicJsonDocument doc(384);
+
+                for(uint8_t i = 0; i < iv->listLen; i++) {
+                    if (iv->assign[i].ch == CH0) {
+                        snprintf(name, 32, "%s %s", iv->name, iv->getFieldName(i));
+                    } else {
+                        snprintf(name, 32, "%s CH%d %s", iv->name, iv->assign[i].ch, iv->getFieldName(i));
+                    }
+                    snprintf(stateTopic, 64, "%s/%s/ch%d/%s", mMqtt.getTopic(), iv->name, iv->assign[i].ch, iv->getFieldName(i));
+                    snprintf(discoveryTopic, 64, "%s/sensor/%s/ch%d_%s/config", MQTT_DISCOVERY_PREFIX, iv->name, iv->assign[i].ch, iv->getFieldName(i));
+                    snprintf(uniq_id, 32, "ch%d_%s", iv->assign[i].ch, iv->getFieldName(i));
+                    const char* devCls = getFieldDeviceClass(iv->assign[i].fieldId);
+                    const char* stateCls = getFieldStateClass(iv->assign[i].fieldId);
+
+                    doc["name"] = name;
+                    doc["stat_t"]  = stateTopic;
+                    doc["unit_of_meas"] = iv->getUnit(i);
+                    doc["uniq_id"] = String(iv->serial.u64, HEX) + "_" + uniq_id;
+                    doc["dev"] = deviceObj;
+                    doc["exp_aft"] = mMqttInterval + 5; // add 5 sec if connection is bad or ESP too slow
+                    if (devCls != NULL) {
+                        doc["dev_cla"] = devCls;
+                    }
+                    if (stateCls != NULL) {
+                        doc["stat_cla"] = stateCls;
+                    }
+
+                    serializeJson(doc, buffer);
+                    mMqtt.sendMsg2(discoveryTopic, buffer, true);
+                    doc.clear();
+
+                    yield();
+                }
+
+                mMqttConfigSendState[id] = true;
+            }
+        }
+    }
+}
+
+const char* app::getFieldDeviceClass(uint8_t fieldId) {
+    uint8_t pos = 0;
+    for(; pos < DEVICE_CLS_ASSIGN_LIST_LEN; pos++) {
+        if(deviceFieldAssignment[pos].fieldId == fieldId)
+            break;
+    }
+    return (pos >= DEVICE_CLS_ASSIGN_LIST_LEN) ? NULL : deviceClasses[deviceFieldAssignment[pos].deviceClsId];
+}
+
+const char* app::getFieldStateClass(uint8_t fieldId) {
+    uint8_t pos = 0;
+    for(; pos < DEVICE_CLS_ASSIGN_LIST_LEN; pos++) {
+        if(deviceFieldAssignment[pos].fieldId == fieldId)
+            break;
+    }
+    return (pos >= DEVICE_CLS_ASSIGN_LIST_LEN) ? NULL : stateClasses[deviceFieldAssignment[pos].stateClsId];
 }
