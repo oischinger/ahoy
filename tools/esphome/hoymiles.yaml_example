@@ -108,3 +108,21 @@ sensor:
 #           name: "DC Voltage"
 #         power:
 #           name: "DC Power"
+
+
+switch:
+  - platform: hoymiles
+    inverter_id: hm400
+
+    name: "HM400 - Switch On/Off"
+
+button:
+  - platform: hoymiles
+    inverter_id: hm400
+    name: "HM400 - Restart"
+
+number:
+  - platform: hoymiles
+    inverter_id: hm400
+    name: "HM400 - Limit"
+    max_power: 400
