@@ -243,7 +243,7 @@ class HmRadio {
             }
         }
 
-        void sendPowerLimitPacket(uint64_t invId, uint8_t limit, bool calcCrc = true) {
+        void sendPowerLimitPacket(uint64_t invId, uint32_t limit, bool calcCrc = true) {
             //DPRINTLN(DBG_VERBOSE, F("hmRadio.h:sendCmdPacket"));
             memset(mTxBuf, 0, MAX_RF_PAYLOAD_SIZE);
             mTxBuf[0] = 0x51; // message id
@@ -252,11 +252,13 @@ class HmRadio {
             mTxBuf[9]  = 0x81;
             mTxBuf[10] = 0x0B; 
             mTxBuf[11] = 0x00;
+
+            uint32_t hm_limt = limit * 10;
             
             // mTxBuf[12] = 0x01; // 30,0W 2 bits
             // mTxBuf[13] = 0xF4;
-            mTxBuf[12] = (limit >> 8) & 0xff;
-            mTxBuf[13] = (limit     ) & 0xff;
+            mTxBuf[12] = (hm_limt >> 8) & 0xff;
+            mTxBuf[13] = (hm_limt     ) & 0xff;
 
             mTxBuf[14] = 0x01; 
             mTxBuf[15] = 0x00; 

@@ -266,7 +266,7 @@ namespace hoymiles {
 
     bool buildPayload(uint8_t id) {
         //DPRINTLN("Payload");
-        uint16_t crc = 0xffff, crcRcv;
+        uint16_t crc = 0xffff, crcRcv = 0x0000;
         if(mPayload[id].maxPackId > MAX_PAYLOAD_ENTRIES)
             mPayload[id].maxPackId = MAX_PAYLOAD_ENTRIES;
 

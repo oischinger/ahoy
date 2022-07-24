@@ -63,6 +63,10 @@ class HoymilesComponent : public Component {
 
         Inverter<> * get_inverter(char *identification);
 
+        time_t getTimestamp() {
+            return this->time_clock->now().timestamp;
+        }
+
 
     protected:
 
