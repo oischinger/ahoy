@@ -252,8 +252,10 @@ class HmRadio {
             mTxBuf[10] = 0x0B; 
             mTxBuf[11] = 0x00;
             
-            mTxBuf[12] = 0x01; // 30,0W 2 bits
-            mTxBuf[13] = 0xF4;
+            // mTxBuf[12] = 0x01; // 30,0W 2 bits
+            // mTxBuf[13] = 0xF4;
+            mTxBuf[12] = (limit >> 8) & 0xff;
+            mTxBuf[13] = (limit     ) & 0xff;
 
             mTxBuf[14] = 0x01; 
             mTxBuf[15] = 0x00; 

@@ -20,16 +20,7 @@ AUTO_LOAD=[
 
 HoymilesButton = hoymiles_ns.class_("HoymilesButton", button.Button, cg.Component)
 
-# CONFIG_SCHEMA = (
-#    button.button_schema(
-#         device_class=DEVICE_CLASS_RESTART, entity_category=ENTITY_CATEGORY_CONFIG
-#     )
-#     .extend({cv.GenerateID(): cv.use_id(HoymilesButton)})
-#     .extend(cv.COMPONENT_SCHEMA)    
-# )
-
 CONF_INVERTER_ID = "inverter_id"
-
 
 CONFIG_SCHEMA = (
     button.button_schema()

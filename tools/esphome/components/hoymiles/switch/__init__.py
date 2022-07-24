@@ -3,8 +3,9 @@ import esphome.config_validation as cv
 from esphome.components import hoymiles, switch
 from esphome.const import CONF_ID
 
-hoymiles_switch_ns = cg.esphome_ns.namespace('hoymiles')
-HoymilesSwitch = hoymiles_switch_ns.class_('HoymilesSwitch', switch.Switch, cg.Component)
+from .. import hoymiles_ns
+
+HoymilesSwitch = hoymiles_ns.class_('HoymilesSwitch', switch.Switch, cg.Component)
 
 CONF_INVERTER_ID = "inverter_id"
 
