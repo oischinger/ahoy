@@ -126,7 +126,6 @@ async def register_hoymiles_device(var, config):
     cg.add(var.set_hoymiles_parent(parent))
 
 
-
 async def register_hoymiles_button(var, config):
     var = cg.new_Pvariable(config[CONF_ID])
     yield cg.register_component(var, config)    
