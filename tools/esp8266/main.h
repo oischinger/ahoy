@@ -54,7 +54,7 @@ class Main {
             while(length > 0) {
                 len = (length < 32) ? length : 32;
                 mEep->read(start, buf, len);
-                crc = crc16(buf, len, crc);
+                crc = Hoymiles::crc16(buf, len, crc);
                 start += len;
                 length -= len;
             }
