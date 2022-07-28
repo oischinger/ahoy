@@ -48,7 +48,7 @@ namespace hoymiles {
 
         mSys = new HmSystemType();
 
-        // mSys->Radio.AmplifierPower = 2;
+        mSys->Radio.AmplifierPower = this->amplifier_power_;
 
         mSys->Radio.pinCs  = this->cs_pin_->get_pin();
         mSys->Radio.pinCe  = this->ce_pin_->get_pin();

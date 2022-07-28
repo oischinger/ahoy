@@ -144,20 +144,46 @@ sensor:
   - platform: uptime
     name: HM400 - Uptime Sensor
 ```
-## 5. Issues
 
-### 5.1 Open Issues
+## 5. Super experimental features
+Using these features is at your own risk and may damage the device.
+
+### 5.1 ON / Off
+
+```yaml
+switch:
+  - platform: hoymiles
+    inverter_id: hm400
+
+    name: "HM400 - Switch On/Off"
+```
+
+`inverter_id` must be the same one that is defined in the `hoymiles`component.
+
+### 5.2 Limiting with absolute number
+
+```yml
+number:
+  - platform: hoymiles
+    inverter_id: hm400
+    name: "HM400 - Limit"
+    max_power: 400
+```
+
+## 6. Issues
+
+### 6.1 Open Issues
 #### Console logging is not showing the recieved data
 Currently the debug information is send directly to Serial and cannot be displayed in HomeAssistant when connected via browser
 
-### 5.2 Closes Issues
+### 6.2 Closes Issues
 ### Esp8266 code is not working with ESP32
 Some minor differences in the original ahoy code. The F("String") macro returns a FlashStringHelper type that cannot be concatinated with a normal String. Therefore all String concatinations needs to be sparated.
 
 ### Crc16 and crc8 already exists 
 The Esphome enviroment declares crc8 and crc16 globally. It's required to wrap the ahoy CRC functionally into an own namespace
 
-## 6. Support
+## 7. Support
 
 ## Testted Platforms:
 - [x] ESP32
