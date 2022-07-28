@@ -30,8 +30,8 @@ namespace hoymiles {
 
 
                     if (iv->assign[i].ch == 0) {
-                        if (String(fields[iv->assign[i].fieldId]).compareTo(String("Temp")) == 0 && this->general_.yield_temperature_sensor_ != nullptr) {
-                            this->general_.yield_temperature_sensor_->publish_state(iv->getValue(i));
+                        if (String(fields[iv->assign[i].fieldId]).compareTo(String("Temp")) == 0 && this->general_.temperature_sensor_ != nullptr) {
+                            this->general_.temperature_sensor_->publish_state(iv->getValue(i));
                         }
                         else if (String(fields[iv->assign[i].fieldId]).compareTo(String("U_AC")) == 0 && this->grid_.voltage_sensor_ != nullptr) {
                             this->grid_.voltage_sensor_->publish_state(iv->getValue(i));
@@ -42,8 +42,17 @@ namespace hoymiles {
                         else if (String(fields[iv->assign[i].fieldId]).compareTo(String("P_AC")) == 0 && this->grid_.power_sensor_ != nullptr) {
                             this->grid_.power_sensor_->publish_state(iv->getValue(i));
                         }
+                        else if (String(fields[iv->assign[i].fieldId]).compareTo(String("P_DC")) == 0 && this->general_.power_sensor_ != nullptr) {
+                            this->general_.power_sensor_->publish_state(iv->getValue(i));
+                        }                        
                         else if (String(fields[iv->assign[i].fieldId]).compareTo(String("Freq")) == 0 && this->grid_.frequency_sensor_ != nullptr) {
                             this->grid_.frequency_sensor_->publish_state(iv->getValue(i));
+                        }
+                        else if (String(fields[iv->assign[i].fieldId]).compareTo(String("YieldDay")) == 0 && this->general_.yield_day_sensor_ != nullptr) {
+                            this->general_.yield_day_sensor_->publish_state(iv->getValue(i));
+                        }
+                        else if (String(fields[iv->assign[i].fieldId]).compareTo(String("YieldTotal")) == 0 && this->general_.yield_total_sensor_ != nullptr) {
+                            this->general_.yield_total_sensor_->publish_state(iv->getValue(i));
                         }
                         else if (String(fields[iv->assign[i].fieldId]).compareTo(String("Effiency")) == 0 && this->general_.efficiency_sensor_ != nullptr) {
                             this->general_.efficiency_sensor_->publish_state(iv->getValue(i));
@@ -52,26 +61,26 @@ namespace hoymiles {
 
                     } else if (iv->assign[i].ch > 0) {
 
-                        if (String(fields[iv->assign[i].fieldId]).compareTo(String("YieldDay")) == 0 && this->general_.yield_day_sensor_ != nullptr) {
-                            this->general_.yield_day_sensor_->publish_state(iv->getValue(i));
-                        }
-                        else if (String(fields[iv->assign[i].fieldId]).compareTo(String("YieldTotal")) == 0 && this->general_.yield_total_sensor_ != nullptr) {
-                            this->general_.yield_total_sensor_->publish_state(iv->getValue(i));
-                        } else {
-                            int dc_channel = (iv->assign[i].ch-1);
-                            if (String(fields[iv->assign[i].fieldId]).compareTo(String("P_DC")) == 0 && this->dc_channels_[dc_channel].power_sensor_ != nullptr) {
-                                this->dc_channels_[dc_channel].power_sensor_->publish_state(iv->getValue(i));
-                            }
-                            else if (String(fields[iv->assign[i].fieldId]).compareTo(String("I_DC")) == 0 && this->dc_channels_[dc_channel].current_sensor_ != nullptr) {
-                                this->dc_channels_[dc_channel].current_sensor_->publish_state(iv->getValue(i));
-                            }
-                            else if (String(fields[iv->assign[i].fieldId]).compareTo(String("U_DC")) == 0 && this->dc_channels_[dc_channel].voltage_sensor_ != nullptr) {
-                                this->dc_channels_[dc_channel].voltage_sensor_->publish_state(iv->getValue(i));
-                            }
-                            else if (String(fields[iv->assign[i].fieldId]).compareTo(String("Irradiation")) == 0 && this->dc_channels_[dc_channel].irradiation_sensor_ != nullptr) {
-                                this->dc_channels_[dc_channel].irradiation_sensor_->publish_state(iv->getValue(i));
-                            }
+                        int dc_channel = (iv->assign[i].ch-1);
 
+
+                        if (String(fields[iv->assign[i].fieldId]).compareTo(String("P_DC")) == 0 && this->dc_channels_[dc_channel].power_sensor_ != nullptr) {
+                            this->dc_channels_[dc_channel].power_sensor_->publish_state(iv->getValue(i));
+                        }
+                        else if (String(fields[iv->assign[i].fieldId]).compareTo(String("I_DC")) == 0 && this->dc_channels_[dc_channel].current_sensor_ != nullptr) {
+                            this->dc_channels_[dc_channel].current_sensor_->publish_state(iv->getValue(i));
+                        }
+                        else if (String(fields[iv->assign[i].fieldId]).compareTo(String("U_DC")) == 0 && this->dc_channels_[dc_channel].voltage_sensor_ != nullptr) {
+                            this->dc_channels_[dc_channel].voltage_sensor_->publish_state(iv->getValue(i));
+                        }
+                        else if (String(fields[iv->assign[i].fieldId]).compareTo(String("Irradiation")) == 0 && this->dc_channels_[dc_channel].irradiation_sensor_ != nullptr) {
+                            this->dc_channels_[dc_channel].irradiation_sensor_->publish_state(iv->getValue(i));
+                        }
+                        else if (String(fields[iv->assign[i].fieldId]).compareTo(String("YieldDay")) == 0 && this->dc_channels_[dc_channel].yield_day_sensor_ != nullptr) {
+                            this->dc_channels_[dc_channel].yield_day_sensor_->publish_state(iv->getValue(i));
+                        }
+                        else if (String(fields[iv->assign[i].fieldId]).compareTo(String("YieldTotal")) == 0 && this->dc_channels_[dc_channel].yield_total_sensor_ != nullptr) {
+                            this->dc_channels_[dc_channel].yield_total_sensor_->publish_state(iv->getValue(i));
                         }
                     }
                 }

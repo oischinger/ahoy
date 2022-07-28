@@ -261,7 +261,7 @@ namespace hoymiles {
             }
         }
         ESP_LOGW(TAG, "Inverter with identification %s not found", identification);
-        // // return NULL;
+        return NULL;
     }
 
     bool buildPayload(uint8_t id) {
@@ -363,7 +363,7 @@ namespace hoymiles {
         }
         // ESP_LOGI(TAG, "test %s", buffer);
 
-        // return buffer;
+        return buffer;
     }
 
     static String C_DHEX(uint8_t b) {
