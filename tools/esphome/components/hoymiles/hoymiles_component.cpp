@@ -7,6 +7,13 @@ namespace esphome {
 namespace hoymiles {
     static const char *const TAG = "hoymiles.esp32";
 
+    enum control_commands { 
+        TURN_ON = 0x00, 
+        TURN_OFF = 0x01, 
+        RESTART = 0x02,
+        CLEAN_STATE_ALARM = 0x14
+    }; 
+
     uint32_t mRxTicker;
     time_t mTimestamp;
     uint32_t mTicker;
@@ -228,13 +235,23 @@ namespace hoymiles {
     void HoymilesComponent::sendTurnOnOffPacket(uint64_t invId, bool state) {
         ESP_LOGI(TAG, "Sending OnOff: %d", state);
 
-        mSys->Radio.sendTurnOnOffPacket(invId, state, true);
+        if (state) {
+            mSys->Radio.sendControlPacket(invId, control_commands::TURN_ON);
+        } else {
+            mSys->Radio.sendControlPacket(invId, control_commands::TURN_OFF);
+        }
     }
 
     void HoymilesComponent::sendRestartPacket(uint64_t invId) {
         ESP_LOGI(TAG, "Sending Restart");
 
-        mSys->Radio.sendRestartPacket(invId, true);
+        mSys->Radio.sendControlPacket(invId, control_commands::RESTART);
+    }
+
+    void HoymilesComponent::sendCleanStatePacket(uint64_t invId) {
+        ESP_LOGI(TAG, "Sending Command to clean alarm and state");
+
+        mSys->Radio.sendControlPacket(invId, control_commands::CLEAN_STATE_ALARM);
     }
 
 

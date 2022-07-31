@@ -43,6 +43,7 @@ class HoymilesComponent : public Component {
         void sendLimitPacket(uint64_t invId, uint32_t limit);
         void sendTurnOnOffPacket(uint64_t invId, bool state);
         void sendRestartPacket(uint64_t invId);
+        void sendCleanStatePacket(uint64_t invId);
 
         void set_ce_pin(InternalGPIOPin *pin) { this->ce_pin_ = pin; }
         void set_cs_pin(InternalGPIOPin *pin) { this->cs_pin_ = pin; }

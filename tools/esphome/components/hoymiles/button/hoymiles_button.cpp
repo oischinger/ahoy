@@ -15,10 +15,13 @@ namespace hoymiles {
 
         Inverter<> *iv = this->parent_->get_inverter(this->inviter_id_);
 
-        this->parent_->sendRestartPacket(iv->radioId.u64);
+        if (this->_type == HoymilesButtonTypes::RESTART) {
+            this->parent_->sendRestartPacket(iv->radioId.u64);
+        }
+        else if (this->_type == HoymilesButtonTypes::CLEAN_STATE) {
+            this->parent_->sendCleanStatePacket(iv->radioId.u64);
+        }
 
-    // Let MQTT settle a bit
-    // delay(100);  // NOLINT
     }
 
 }  // namespace hoymiles

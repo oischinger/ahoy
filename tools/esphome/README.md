@@ -92,6 +92,12 @@ sensor:
       yield_total:
         name: "HM400 - Yield total"
 
+      efficiency:
+        name: "HM400 - Efficiency"
+
+      power:
+        name: "HM400 - DC Power Total"        
+
     grid:
       current:
         name: "HM400 - AC Current"
@@ -109,6 +115,14 @@ sensor:
         name: "HM400 - DC Voltage Channel 1"
       power:
         name: "HM400 - DC Power Channel 1"
+      irradiation:
+        name: "HM400 - Irradiation Channel 1"
+
+      yield_day:
+        name: "HM400 - Yield day Channel 1"
+
+      yield_total:
+        name: "HM400 - Yield total Channel 1"         
 
     channel_2:
     channel_3:
@@ -170,6 +184,17 @@ number:
     max_power: 400
 ```
 
+### 5.3 Restart
+
+```yml
+button:
+  - platform: hoymiles
+    inverter_id: hm400
+    name: "HM400 - Restart"
+    type: RESTART
+```
+
+
 ## 6. Issues
 
 ### 6.1 Open Issues
@@ -184,6 +209,10 @@ Some minor differences in the original ahoy code. The F("String") macro returns 
 The Esphome enviroment declares crc8 and crc16 globally. It's required to wrap the ahoy CRC functionally into an own namespace
 
 ## 7. Support
+
+## Thanks
+[ZsZs73](https://github.com/ZsZs73/ahoy)
+[grindylow](https://github.com/grindylow)
 
 ## Testted Platforms:
 - [x] ESP32
